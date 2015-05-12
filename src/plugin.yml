@@ -1,0 +1,7 @@
+name: FirstPlugin
+version: 1.0
+main: com.Dragon.FirstPlugin.FirstPlugin
+commands:
+  heal:
+    description: Heals a Player.
+    usage: /<command> username
