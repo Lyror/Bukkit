@@ -11,48 +11,65 @@ import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class FirstPlugin extends JavaPlugin
-{
-    Logger log = getLogger();
-    
-    @Override
-    public void onDisable()
-    {
-        log.info("FirstPlugin onDisable");
-    }
-    
-    @Override
-    public void onEnable()
-    {
-        log.info("FirstPlugin onEnable");
-    }
-    
+{    
+	Logger log = getLogger();
+
+	@Override
+	public void onEnable() 
+	{
+		System.out.println("Registriere Move Event");
+		registerEvents();
+	}
+	
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
     {
-        if(cmd.getName().equalsIgnoreCase("heal"))
-        {
-			Player pl = null;
-            if(sender instanceof Player)
+		try
+		{	
+			if(cmd.getName().equalsIgnoreCase("poison"))
 			{
-				log.info(sender.getName());
-                pl = Bukkit.getServer().getPlayer(sender.getName());
-			}
-            else
-            {
-                if(args.length < 1)
+				Player pl = null;
+				Player player = null;
+				if(sender instanceof Player)
 				{
-					log.info("Bitte gebe einen Spielernamen an!");
-					return true;
+					log.info(sender.getName());
+					pl = Bukkit.getServer().getPlayer(sender.getName());
 				}
 				else
 				{
-					if(Bukkit.getServer().getPlayer(args[0]) != null)
+					if(args.length < 1)
 					{
-						Bukkit.getServer().getPlayer(args[0]).setHealth(20);
-						pl.sendMessage("§2" + args[0] + "wurde geheilt!");
-						Bukkit.getServer().getPlayer(args[0]).sendMessage("§2Du wurdest geheilt");
+						log.info("Bitte gebe einen Spielernamen an!");
+						return true;
+					}
+					else
+					{
+						if((player = Bukkit.getServer().getPlayer(args[0])) != null)
+						{
+							player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 1));
+							pl.sendMessage("§2" + args[0] + "wurde vergiftet!");
+							Bukkit.getServer().getPlayer(args[0]).sendMessage("§2Du wurdest vergiftet");
+						}
+						else
+						{
+							pl.sendMessage("§4Der Spieler konnte nicht gefunden werden!");
+						}
+						return true;
+					}
+				}
+				if(args.length > 0)
+				{
+					if((player = Bukkit.getServer().getPlayer(args[0])) != null)
+					{					
+						player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 1));
+						pl.sendMessage("§2" + args[0] + "wurde vergiftet!");
+						Bukkit.getServer().getPlayer(args[0]).sendMessage("§2Du wurdest vergiftet");
 					}
 					else
 					{
@@ -60,28 +77,25 @@ public class FirstPlugin extends JavaPlugin
 					}
 					return true;
 				}
-			}
-			if(args.length > 0)
-			{
-				if(Bukkit.getServer().getPlayer(args[0]) != null)
-				{
-					Bukkit.getServer().getPlayer(args[0]).setHealth(20);
-					pl.sendMessage("§2" + args[0] + "wurde geheilt!");
-					Bukkit.getServer().getPlayer(args[0]).sendMessage("§2Du wurdest geheilt");
-				}
 				else
 				{
-					pl.sendMessage("§4Der Spieler konnte nicht gefunden werden!");
+					pl.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 1));
+					pl.sendMessage("§2Du wurde vergiftet!");
+					return true;
 				}
-				return true;
 			}
-			else
-			{
-				pl.setHealth(20);
-				pl.sendMessage("§2Du wurde geheilt!");
-				return true;
-			}
-        }
-		return false;
+			return false;
+		}
+		catch(Exception ex)
+		{
+			log.info(ex.getMessage());
+			return false;
+		}
     }
+
+	private void registerEvents()
+	{
+		new PlayerMoveEvents(this,log);
+		new ArrowEffects(this,log);
+	}
 }
